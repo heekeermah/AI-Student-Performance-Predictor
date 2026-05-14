@@ -323,39 +323,47 @@ if st.button("🔍 Predict Performance"):
     else:
         st.success("✅ No weak subjects identified.")
 
-    # ======================================
-    # AI RECOMMENDATION ENGINE
-    # ======================================
+# ======================================
+# AI RECOMMENDATION ENGINE
+# ======================================
 
-    prompt = f"""
-    A student has the following profile:
+st.subheader("🤖 AI Recommendations")
 
-    Study Hours Per Week: {study_hours_per_week}
-    Attendance Rate: {attendance_rate}
-    Previous Grades: {previous_grades}
+prompt = f"""
+You are an intelligent academic mentor.
 
-    Mathematics Score: {math_score}
-    English Score: {english_score}
-    Science Score: {science_score}
+Analyze this student's performance data and provide:
+- personalized academic advice
+- study improvement tips
+- motivation
+- weak subject intervention strategies
 
-    Prediction Result: {prediction_result}
+Student Details:
 
-    Weak Subjects: {weak_subjects}
+Study Hours Per Week: {study_hours_per_week}
+Attendance Rate: {attendance_rate}
+Previous Grades: {previous_grades}
 
-    Provide:
-    1. Personalized academic advice
-    2. Study improvement strategies
-    3. Subject-specific recommendations
-    4. Motivation for the student
+Mathematics Score: {math_score}
+English Score: {english_score}
+Science Score: {science_score}
 
-    Keep response concise and practical.
-    """
+Prediction Result:
+{"PASS" if prediction == 1 else "FAIL"}
 
-    response = model_ai.generate_content(prompt)
+Weak Subjects:
+{weak_subjects}
 
-    recommendation = response.text
+Keep the response concise and practical.
+"""
 
-    # ======================================
+# Generate AI recommendation
+response = model_ai.generate_content(prompt)
+
+# Store recommendation text
+recommendation = response.text
+
+# ======================================
 # AI TRANSLATION USING GEMINI
 # ======================================
 
@@ -371,14 +379,16 @@ translation_response = model_ai.generate_content(
 )
 
 translated_text = translation_response.text
-    
-st.subheader("🤖 AI Recommendations")
+
+# ======================================
+# DISPLAY RECOMMENDATIONS
+# ======================================
 
 st.write(translated_text)
 
-    # ======================================
-    # TEXT TO SPEECH
-    # ======================================
+# ======================================
+# TEXT TO SPEECH
+# ======================================
 
 tts = gTTS(
     text=translated_text,
@@ -392,7 +402,6 @@ tts.save(audio_file)
 audio_bytes = open(audio_file, "rb").read()
 
 st.audio(audio_bytes, format="audio/mp3")
-
     # ======================================
     # PERFORMANCE DASHBOARD
     # ======================================
