@@ -380,34 +380,34 @@ st.write(translated_text)
     # TEXT TO SPEECH
     # ======================================
 
-    tts = gTTS(
-        text=translated_text,
-        lang=selected_lang
-    )
+tts = gTTS(
+    text=translated_text,
+    lang=selected_lang
+)
 
-    audio_file = "recommendation.mp3"
+audio_file = "recommendation.mp3"
 
-    tts.save(audio_file)
+tts.save(audio_file)
 
-    audio_bytes = open(audio_file, "rb").read()
+audio_bytes = open(audio_file, "rb").read()
 
-    st.audio(audio_bytes, format="audio/mp3")
+st.audio(audio_bytes, format="audio/mp3")
 
     # ======================================
     # PERFORMANCE DASHBOARD
     # ======================================
 
-    st.markdown("---")
+st.markdown("---")
 
-    st.subheader("📊 Student Performance Dashboard")
+st.subheader("📊 Student Performance Dashboard")
 
-    risk_score = 100 - attendance_rate
+risk_score = 100 - attendance_rate
 
-    performance_score = (
+performance_score = (
         study_hours_per_week * 2 +
         attendance_rate * 0.4 +
         previous_grades * 0.6
-    )
+)
 
     col6, col7, col8 = st.columns(3)
 
