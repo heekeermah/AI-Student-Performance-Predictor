@@ -1,8 +1,8 @@
+google-generativeai>=0.7.2
 streamlit
-numpy
 pandas
-scikit-learn
 plotly
-gtts
-google-generativeai>=0.5.0
+gTTS
 fpdf
+numpy
+scikit-learn
