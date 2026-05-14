@@ -374,7 +374,7 @@ translated_text = translation_response.text
     
 st.subheader("🤖 AI Recommendations")
 
-    st.write(translated_text)
+st.write(translated_text)
 
     # ======================================
     # TEXT TO SPEECH
