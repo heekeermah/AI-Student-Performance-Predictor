@@ -409,31 +409,31 @@ performance_score = (
         previous_grades * 0.6
 )
 
-    col6, col7, col8 = st.columns(3)
+col6, col7, col8 = st.columns(3)
 
-    with col6:
+with col6:
         st.metric(
             "📚 Study Hours",
             f"{study_hours_per_week} hrs"
         )
 
-    with col7:
-        st.metric(
+with col7:
+    st.metric(
             "📝 Previous Grades",
             f"{previous_grades}%"
-        )
+    )
 
-    with col8:
-        st.metric(
+with col8:
+    st.metric(
             "⚠️ Academic Risk",
             f"{risk_score}%"
-        )
+    )
 
     # ======================================
     # BAR CHART
     # ======================================
 
-    chart_data = pd.DataFrame({
+chart_data = pd.DataFrame({
         "Category": [
             "Study Hours",
             "Attendance",
@@ -444,59 +444,59 @@ performance_score = (
             attendance_rate,
             previous_grades
         ]
-    })
+})
 
-    fig_bar = px.bar(
+fig_bar = px.bar(
         chart_data,
         x="Category",
         y="Score",
         text="Score",
         title="Academic Indicators"
-    )
+)
 
-    st.plotly_chart(
+st.plotly_chart(
         fig_bar,
         use_container_width=True
-    )
+)
 
     # ======================================
     # PIE CHART
     # ======================================
 
-    if performance_score >= 80:
-        risk_label = "Low Risk"
-        risk_value = 80
+if performance_score >= 80:
+    risk_label = "Low Risk"
+    risk_value = 80
 
-    elif performance_score >= 50:
-        risk_label = "Medium Risk"
-        risk_value = 50
+elif performance_score >= 50:
+    risk_label = "Medium Risk"
+    risk_value = 50
 
-    else:
-        risk_label = "High Risk"
-        risk_value = 20
+else:
+    risk_label = "High Risk"
+    risk_value = 20
 
-    pie_data = pd.DataFrame({
+pie_data = pd.DataFrame({
         "Category": [risk_label, "Remaining"],
         "Value": [risk_value, 100 - risk_value]
-    })
+})
 
-    fig_pie = px.pie(
+fig_pie = px.pie(
         pie_data,
         names="Category",
         values="Value",
         title="Academic Risk Analysis"
-    )
+)
 
-    st.plotly_chart(
+st.plotly_chart(
         fig_pie,
         use_container_width=True
-    )
+)
 
     # ======================================
     # TREND LINE CHART
     # ======================================
 
-    trend_data = pd.DataFrame({
+trend_data = pd.DataFrame({
         "Weeks": [
             "Week 1",
             "Week 2",
@@ -509,69 +509,69 @@ performance_score = (
             previous_grades,
             previous_grades + 5
         ]
-    })
+})
 
-    fig_line = px.line(
+fig_line = px.line(
         trend_data,
         x="Weeks",
         y="Performance",
         markers=True,
         title="Performance Trend"
-    )
+)
 
-    st.plotly_chart(
+st.plotly_chart(
         fig_line,
         use_container_width=True
-    )
+)
 
     # ======================================
     # RISK ANALYTICS
     # ======================================
 
-    st.subheader("📈 Risk Analytics")
+st.subheader("📈 Risk Analytics")
 
-    if attendance_rate < 50:
+if attendance_rate < 50:
         st.warning(
             "⚠️ Low attendance is affecting performance."
-        )
+    )
 
-    if study_hours_per_week < 5:
-        st.warning(
+if study_hours_per_week < 5:
+    st.warning(
             "⚠️ Study hours are below recommended level."
-        )
+    )
 
-    if previous_grades < 50:
-        st.warning(
+if previous_grades < 50:
+    st.warning(
             "⚠️ Previous grades indicate academic risk."
         )
 
-    if (
+if (
         attendance_rate >= 70 and
         study_hours_per_week >= 10 and
         previous_grades >= 60
-    ):
-        st.success(
+):
+    st.success(
             "✅ Student shows strong academic potential."
-        )
+    )
 
     # ======================================
     # PDF REPORT DOWNLOAD
     # ======================================
 
-    pdf_file = generate_pdf(
+pdf_file = generate_pdf(
         prediction_result,
         recommendation,
         weak_subjects
-    )
+)
 
-    with open(pdf_file, "rb") as file:
+with open(pdf_file, "rb") as file:
 
-        st.download_button(
+    st.download_button(
             label="📥 Download Student Report",
             data=file,
             file_name="student_report.pdf",
             mime="application/pdf"
-        )
+    )
 
 # ==========================================
 # FOOTER
