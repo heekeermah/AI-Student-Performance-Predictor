@@ -22,13 +22,25 @@ st.set_page_config(
 # ==========================================
 # GEMINI AI CONFIGURATION
 # ==========================================
+try:
 
-GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
 
-genai.configure(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=GEMINI_API_KEY)
 
-model_ai = genai.GenerativeModel("gemini-1.5-flash")
+    model_ai = genai.GenerativeModel(
+        "gemini-1.5-flash-latest"
+    )
 
+    ai_available = True
+
+except Exception as e:
+
+    ai_available = False
+
+    st.warning(
+        "AI recommendations temporarily unavailable."
+    )
 # ==========================================
 # LOAD MACHINE LEARNING MODEL
 # ==========================================
@@ -314,10 +326,35 @@ if st.button("🔍 Predict Performance"):
 
     Keep the response concise and practical.
     """
+if ai_available:
 
     response = model_ai.generate_content(prompt)
 
     recommendation = response.text
+
+else:
+
+    recommendation = """
+    Study consistently.
+    Improve attendance.
+    Focus more on weak subjects.
+    Practice past questions regularly.
+    """
+    if ai_available:
+
+    response = model_ai.generate_content(prompt)
+
+    recommendation = response.text
+
+    else:
+
+    recommendation = """
+    Study consistently.
+    Improve attendance.
+    Focus more on weak subjects.
+    Practice past questions regularly.
+    """
+    
 
     # ======================================
     # TRANSLATION
@@ -330,12 +367,17 @@ if st.button("🔍 Predict Performance"):
     {recommendation}
     """
 
+    if ai_available:
+
     translation_response = model_ai.generate_content(
         translation_prompt
     )
 
     translated_text = translation_response.text
 
+    else:
+
+    translated_text = recommendation
     st.write(translated_text)
 
     # ======================================
