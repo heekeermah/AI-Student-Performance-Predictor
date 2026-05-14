@@ -371,8 +371,8 @@ translation_response = model_ai.generate_content(
 )
 
 translated_text = translation_response.text
-
-    st.subheader("🤖 AI Recommendations")
+    
+st.subheader("🤖 AI Recommendations")
 
     st.write(translated_text)
 
