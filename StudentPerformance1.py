@@ -29,7 +29,7 @@ try:
     genai.configure(api_key=GEMINI_API_KEY)
 
     model_ai = genai.GenerativeModel(
-        "gemini-1.5-flash"
+        "gemini-1.5-flash-latest"
     )
 
     ai_available = True
