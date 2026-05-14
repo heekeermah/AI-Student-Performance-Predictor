@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 import google.generativeai as genai
 
-from googletrans import Translator
+
 from gtts import gTTS
 from fpdf import FPDF
 
@@ -26,7 +26,6 @@ from fpdf import FPDF
 with open('studentperformance.pkl', 'rb') as file:
     model = pickle.load(file)
 
-translator = Translator()
 
 # ==========================================
 # PAGE CONFIG
@@ -357,15 +356,21 @@ if st.button("🔍 Predict Performance"):
     recommendation = response.text
 
     # ======================================
-    # TRANSLATION
-    # ======================================
+# AI TRANSLATION USING GEMINI
+# ======================================
 
-    translated = translator.translate(
-        recommendation,
-        dest=selected_lang
-    )
+translation_prompt = f"""
+Translate the following text to {language}.
 
-    translated_text = translated.text
+Text:
+{recommendation}
+"""
+
+translation_response = model_ai.generate_content(
+    translation_prompt
+)
+
+translated_text = translation_response.text
 
     st.subheader("🤖 AI Recommendations")
 
