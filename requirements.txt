@@ -4,5 +4,5 @@ pandas
 scikit-learn
 plotly
 gtts
-google-generativeai
+google-generativeai>=0.5.0
 fpdf
