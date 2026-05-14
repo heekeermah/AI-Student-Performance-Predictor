@@ -22,25 +22,18 @@ st.set_page_config(
 # ==========================================
 # GEMINI AI CONFIGURATION
 # ==========================================
+ai_available = False
 try:
-
-    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-
-    genai.configure(api_key=GEMINI_API_KEY)
-
-    model_ai = genai.GenerativeModel(
-        "gemini-1.5-flash-latest"
-    )
-
-    ai_available = True
-
+    if "GEMINI_API_KEY" in st.secrets:
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        # Using the most stable model string
+        model_ai = genai.GenerativeModel("gemini-1.5-flash")
+        ai_available = True
+    else:
+        st.error("API Key missing in secrets!")
 except Exception as e:
+    st.warning(f"AI Setup Error: {e}")
 
-    ai_available = False
-
-    st.warning(
-        "AI recommendations temporarily unavailable."
-    )
 # ==========================================
 # LOAD MACHINE LEARNING MODEL
 # ==========================================
@@ -293,52 +286,36 @@ if st.button("🔍 Predict Performance"):
     else:
         st.success("✅ No weak subjects identified.")
 
-# ======================================
+    # ======================================
     # AI RECOMMENDATION ENGINE
     # ======================================
-
     st.subheader("🤖 AI Recommendations")
 
-    # This variable is now safely inside the button click block
-    prompt = f"""
-    You are an intelligent academic mentor.
-    Analyze this student's performance data and provide:
-    - personalized academic advice
-    - study improvement tips
-    - motivation
-    - weak subject intervention strategies
+    # Define the prompt INSIDE the button block
+    prompt = f"Analyze student: Study {study_hours_per_week}hrs, Attendance {attendance_rate}%, Math {math_score}. Provide advice."
 
-    Student Details:
-    Study Hours Per Week: {study_hours_per_week}
-    Attendance Rate: {attendance_rate}
-    Previous Grades: {previous_grades}
-    Mathematics Score: {math_score}
-    English Score: {english_score}
-    Science Score: {science_score}
+    recommendation = "Study consistently and focus on weak subjects."
+    translated_text = recommendation
 
-    Prediction Result: {prediction_result}
-    Weak Subjects: {weak_subjects}
-
-    Keep the response concise and practical.
-    """
-
-    # --- AI Logic moved INSIDE the button block ---
     if ai_available:
         try:
+            # Wrap AI calls in a single block
             response = model_ai.generate_content(prompt)
             recommendation = response.text
+            
+            translation_prompt = f"Translate to {language}: {recommendation}"
+            t_response = model_ai.generate_content(translation_prompt)
+            translated_text = t_response.text
+            
+            st.write(recommendation)
+            st.info(f"**{language} Version:**")
+            st.write(translated_text)
+            
         except Exception as e:
             st.error(f"AI Error: {e}")
-            recommendation = "Focus on consistent study habits and attendance."
+            st.write(recommendation) # Show default if AI fails
     else:
-        recommendation = """
-        Study consistently.
-        Improve attendance.
-        Focus more on weak subjects.
-        Practice past questions regularly.
-        """
-    
-    st.write(recommendation)
+        st.write(recommendation)
 
     # ======================================
     # TRANSLATION
