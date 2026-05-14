@@ -341,19 +341,16 @@ else:
     Practice past questions regularly.
     """
     if ai_available:
-
-    response = model_ai.generate_content(prompt)
-
-    recommendation = response.text
+        response = model_ai.generate_content(prompt)
+        recommendation = response.text
 
     else:
-
-    recommendation = """
-    Study consistently.
-    Improve attendance.
-    Focus more on weak subjects.
-    Practice past questions regularly.
-    """
+        recommendation = """
+        Study consistently.
+        Improve attendance.
+        Focus more on weak subjects.
+        Practice past questions regularly.
+        """
     
 
     # ======================================
@@ -368,17 +365,14 @@ else:
     """
 
     if ai_available:
-
-    translation_response = model_ai.generate_content(
-        translation_prompt
-    )
-
-    translated_text = translation_response.text
+        translation_response = model_ai.generate_content(
+            translation_prompt
+        )
+        translated_text = translation_response.text
 
     else:
-
-    translated_text = recommendation
-    st.write(translated_text)
+        translated_text = recommendation
+        st.write(translated_text)
 
     # ======================================
     # TEXT TO SPEECH
