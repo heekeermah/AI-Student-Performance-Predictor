@@ -27,7 +27,7 @@ try:
     if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
         # Using the most stable model string
-        model_ai = genai.GenerativeModel("gemini-1.5-flash")
+        model_ai = genai.GenerativeModel("models/gemini-1.5-flash")
         ai_available = True
     else:
         st.error("API Key missing in secrets!")
@@ -287,33 +287,37 @@ if st.button("🔍 Predict Performance"):
         st.success("✅ No weak subjects identified.")
 
     # ======================================
-    # AI RECOMMENDATION ENGINE
+    # AI RECOMMENDATION ENGINE (INSIDE THE BUTTON BLOCK)
     # ======================================
     st.subheader("🤖 AI Recommendations")
 
-    # Define the prompt INSIDE the button block
-    prompt = f"Analyze student: Study {study_hours_per_week}hrs, Attendance {attendance_rate}%, Math {math_score}. Provide advice."
-
-    recommendation = "Study consistently and focus on weak subjects."
+    # 1. Initialize empty variables so they exist for the PDF/Dashboard later
+    recommendation = "Focus on consistent study and attendance."
     translated_text = recommendation
 
     if ai_available:
         try:
-            # Wrap AI calls in a single block
+            # Create the prompt here (inside the button click)
+            prompt = f"Student info: Study {study_hours_per_week}h, Grades {previous_grades}%. Give 3 tips."
+            
+            # Generate the content
             response = model_ai.generate_content(prompt)
             recommendation = response.text
             
-            translation_prompt = f"Translate to {language}: {recommendation}"
-            t_response = model_ai.generate_content(translation_prompt)
+            # Generate translation immediately after
+            t_prompt = f"Translate to {language}: {recommendation}"
+            t_response = model_ai.generate_content(t_prompt)
             translated_text = t_response.text
             
             st.write(recommendation)
             st.info(f"**{language} Version:**")
             st.write(translated_text)
-            
+
         except Exception as e:
-            st.error(f"AI Error: {e}")
-            st.write(recommendation) # Show default if AI fails
+            st.warning("AI is currently unavailable. Using standard advice.")
+            # This line below prints the error for you to see, but doesn't crash the app
+            st.error(f"Technical Detail: {e}")
+            st.write(recommendation)
     else:
         st.write(recommendation)
 
