@@ -5,26 +5,8 @@ import pandas as pd
 import plotly.express as px
 import google.generativeai as genai
 
-
 from gtts import gTTS
 from fpdf import FPDF
-
-# ==========================================
-# GEMINI AI CONFIGURATION
-# ==========================================
-
-#GEMINI_API_KEY = "AIzaSyAOgqxQRAvHLaqjOtXd47ooZ5QxHvpdCXQ"
-
-#genai.configure(api_key=GEMINI_API_KEY)
-
-#model_ai = genai.GenerativeModel("gemini-1.5-flash")
-
-# ==========================================
-# LOAD MACHINE LEARNING MODEL
-# ==========================================
-
-with open('studentperformance.pkl', 'rb') as file:
-    model = pickle.load(file)
 
 
 # ==========================================
@@ -36,6 +18,23 @@ st.set_page_config(
     page_icon="📚",
     layout="wide"
 )
+
+# ==========================================
+# GEMINI AI CONFIGURATION
+# ==========================================
+
+GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+
+genai.configure(api_key=GEMINI_API_KEY)
+
+model_ai = genai.GenerativeModel("gemini-1.5-flash")
+
+# ==========================================
+# LOAD MACHINE LEARNING MODEL
+# ==========================================
+
+with open("studentperformance.pkl", "rb") as file:
+    model = pickle.load(file)
 
 # ==========================================
 # TITLE
@@ -61,14 +60,12 @@ This intelligent system can:
 
 language = st.selectbox(
     "🌍 Select Language",
-    ["English", "Hausa", "French", "Yoruba"]
+    ["English", "French"]
 )
 
 language_codes = {
     "English": "en",
-    "Hausa": "ha",
-    "French": "fr",
-    "Yoruba": "yo"
+    "French": "fr"
 }
 
 selected_lang = language_codes[language]
@@ -125,28 +122,13 @@ st.subheader("📘 Subject Scores")
 col3, col4, col5 = st.columns(3)
 
 with col3:
-    math_score = st.slider(
-        "Mathematics",
-        0,
-        100,
-        50
-    )
+    math_score = st.slider("Mathematics", 0, 100, 50)
 
 with col4:
-    english_score = st.slider(
-        "English",
-        0,
-        100,
-        50
-    )
+    english_score = st.slider("English", 0, 100, 50)
 
 with col5:
-    science_score = st.slider(
-        "Science",
-        0,
-        100,
-        50
-    )
+    science_score = st.slider("Science", 0, 100, 50)
 
 # ==========================================
 # ENCODE CATEGORICAL VARIABLES
@@ -180,11 +162,7 @@ input_data = np.array([[
 # PDF REPORT FUNCTION
 # ==========================================
 
-def generate_pdf(
-    prediction_result,
-    recommendation_text,
-    weak_subjects_list
-):
+def generate_pdf(prediction_result, recommendation_text, weak_subjects_list):
 
     pdf = FPDF()
 
@@ -204,12 +182,7 @@ def generate_pdf(
 
     pdf.set_font("Arial", size=12)
 
-    pdf.cell(
-        200,
-        10,
-        txt=f"Prediction Result: {prediction_result}",
-        ln=True
-    )
+    pdf.cell(200, 10, txt=f"Prediction: {prediction_result}", ln=True)
 
     pdf.cell(
         200,
@@ -236,26 +209,11 @@ def generate_pdf(
 
     pdf.cell(200, 10, txt="Subject Scores", ln=True)
 
-    pdf.cell(
-        200,
-        10,
-        txt=f"Mathematics: {math_score}",
-        ln=True
-    )
+    pdf.cell(200, 10, txt=f"Mathematics: {math_score}", ln=True)
 
-    pdf.cell(
-        200,
-        10,
-        txt=f"English: {english_score}",
-        ln=True
-    )
+    pdf.cell(200, 10, txt=f"English: {english_score}", ln=True)
 
-    pdf.cell(
-        200,
-        10,
-        txt=f"Science: {science_score}",
-        ln=True
-    )
+    pdf.cell(200, 10, txt=f"Science: {science_score}", ln=True)
 
     pdf.ln(5)
 
@@ -280,7 +238,7 @@ def generate_pdf(
 
     return filename
 
-# =========================================
+# ==========================================
 # PREDICTION BUTTON
 # ==========================================
 
@@ -323,126 +281,126 @@ if st.button("🔍 Predict Performance"):
     else:
         st.success("✅ No weak subjects identified.")
 
-# ======================================
-# AI RECOMMENDATION ENGINE
-# ======================================
+    # ======================================
+    # AI RECOMMENDATION ENGINE
+    # ======================================
 
-st.subheader("🤖 AI Recommendations")
+    st.subheader("🤖 AI Recommendations")
 
-prompt = f"""
-You are an intelligent academic mentor.
+    prompt = f"""
+    You are an intelligent academic mentor.
 
-Analyze this student's performance data and provide:
-- personalized academic advice
-- study improvement tips
-- motivation
-- weak subject intervention strategies
+    Analyze this student's performance data and provide:
+    - personalized academic advice
+    - study improvement tips
+    - motivation
+    - weak subject intervention strategies
 
-Student Details:
+    Student Details:
 
-Study Hours Per Week: {study_hours_per_week}
-Attendance Rate: {attendance_rate}
-Previous Grades: {previous_grades}
+    Study Hours Per Week: {study_hours_per_week}
+    Attendance Rate: {attendance_rate}
+    Previous Grades: {previous_grades}
 
-Mathematics Score: {math_score}
-English Score: {english_score}
-Science Score: {science_score}
+    Mathematics Score: {math_score}
+    English Score: {english_score}
+    Science Score: {science_score}
 
-Prediction Result:
-{"PASS" if prediction == 1 else "FAIL"}
+    Prediction Result:
+    {prediction_result}
 
-Weak Subjects:
-{weak_subjects}
+    Weak Subjects:
+    {weak_subjects}
 
-Keep the response concise and practical.
-"""
+    Keep the response concise and practical.
+    """
 
-# Generate AI recommendation
-response = model_ai.generate_content(prompt)
+    response = model_ai.generate_content(prompt)
 
-# Store recommendation text
-recommendation = response.text
+    recommendation = response.text
 
-# ======================================
-# AI TRANSLATION USING GEMINI
-# ======================================
+    # ======================================
+    # TRANSLATION
+    # ======================================
 
-translation_prompt = f"""
-Translate the following text to {language}.
+    translation_prompt = f"""
+    Translate the following text to {language}.
 
-Text:
-{recommendation}
-"""
+    Text:
+    {recommendation}
+    """
 
-translation_response = model_ai.generate_content(
-    translation_prompt
-)
+    translation_response = model_ai.generate_content(
+        translation_prompt
+    )
 
-translated_text = translation_response.text
+    translated_text = translation_response.text
 
-# ======================================
-# DISPLAY RECOMMENDATIONS
-# ======================================
+    st.write(translated_text)
 
-st.write(translated_text)
+    # ======================================
+    # TEXT TO SPEECH
+    # ======================================
 
-# ======================================
-# TEXT TO SPEECH
-# ======================================
+    try:
 
-tts = gTTS(
-    text=translated_text,
-    lang=selected_lang
-)
+        tts = gTTS(
+            text=translated_text,
+            lang=selected_lang
+        )
 
-audio_file = "recommendation.mp3"
+        audio_file = "recommendation.mp3"
 
-tts.save(audio_file)
+        tts.save(audio_file)
 
-audio_bytes = open(audio_file, "rb").read()
+        audio_bytes = open(audio_file, "rb").read()
 
-st.audio(audio_bytes, format="audio/mp3")
+        st.audio(audio_bytes, format="audio/mp3")
+
+    except:
+        st.warning("Audio generation unavailable.")
+
     # ======================================
     # PERFORMANCE DASHBOARD
     # ======================================
 
-st.markdown("---")
+    st.markdown("---")
 
-st.subheader("📊 Student Performance Dashboard")
+    st.subheader("📊 Student Performance Dashboard")
 
-risk_score = 100 - attendance_rate
+    risk_score = 100 - attendance_rate
 
-performance_score = (
+    performance_score = (
         study_hours_per_week * 2 +
         attendance_rate * 0.4 +
         previous_grades * 0.6
-)
+    )
 
-col6, col7, col8 = st.columns(3)
+    col6, col7, col8 = st.columns(3)
 
-with col6:
+    with col6:
         st.metric(
             "📚 Study Hours",
             f"{study_hours_per_week} hrs"
         )
 
-with col7:
-    st.metric(
+    with col7:
+        st.metric(
             "📝 Previous Grades",
             f"{previous_grades}%"
-    )
+        )
 
-with col8:
-    st.metric(
+    with col8:
+        st.metric(
             "⚠️ Academic Risk",
             f"{risk_score}%"
-    )
+        )
 
     # ======================================
     # BAR CHART
     # ======================================
 
-chart_data = pd.DataFrame({
+    chart_data = pd.DataFrame({
         "Category": [
             "Study Hours",
             "Attendance",
@@ -453,59 +411,53 @@ chart_data = pd.DataFrame({
             attendance_rate,
             previous_grades
         ]
-})
+    })
 
-fig_bar = px.bar(
+    fig_bar = px.bar(
         chart_data,
         x="Category",
         y="Score",
         text="Score",
         title="Academic Indicators"
-)
+    )
 
-st.plotly_chart(
-        fig_bar,
-        use_container_width=True
-)
+    st.plotly_chart(fig_bar, use_container_width=True)
 
     # ======================================
     # PIE CHART
     # ======================================
 
-if performance_score >= 80:
-    risk_label = "Low Risk"
-    risk_value = 80
+    if performance_score >= 80:
+        risk_label = "Low Risk"
+        risk_value = 80
 
-elif performance_score >= 50:
-    risk_label = "Medium Risk"
-    risk_value = 50
+    elif performance_score >= 50:
+        risk_label = "Medium Risk"
+        risk_value = 50
 
-else:
-    risk_label = "High Risk"
-    risk_value = 20
+    else:
+        risk_label = "High Risk"
+        risk_value = 20
 
-pie_data = pd.DataFrame({
+    pie_data = pd.DataFrame({
         "Category": [risk_label, "Remaining"],
         "Value": [risk_value, 100 - risk_value]
-})
+    })
 
-fig_pie = px.pie(
+    fig_pie = px.pie(
         pie_data,
         names="Category",
         values="Value",
         title="Academic Risk Analysis"
-)
+    )
 
-st.plotly_chart(
-        fig_pie,
-        use_container_width=True
-)
+    st.plotly_chart(fig_pie, use_container_width=True)
 
     # ======================================
     # TREND LINE CHART
     # ======================================
 
-trend_data = pd.DataFrame({
+    trend_data = pd.DataFrame({
         "Weeks": [
             "Week 1",
             "Week 2",
@@ -518,69 +470,66 @@ trend_data = pd.DataFrame({
             previous_grades,
             previous_grades + 5
         ]
-})
+    })
 
-fig_line = px.line(
+    fig_line = px.line(
         trend_data,
         x="Weeks",
         y="Performance",
         markers=True,
         title="Performance Trend"
-)
+    )
 
-st.plotly_chart(
-        fig_line,
-        use_container_width=True
-)
+    st.plotly_chart(fig_line, use_container_width=True)
 
     # ======================================
     # RISK ANALYTICS
     # ======================================
 
-st.subheader("📈 Risk Analytics")
+    st.subheader("📈 Risk Analytics")
 
-if attendance_rate < 50:
+    if attendance_rate < 50:
         st.warning(
             "⚠️ Low attendance is affecting performance."
-    )
+        )
 
-if study_hours_per_week < 5:
-    st.warning(
+    if study_hours_per_week < 5:
+        st.warning(
             "⚠️ Study hours are below recommended level."
-    )
+        )
 
-if previous_grades < 50:
-    st.warning(
+    if previous_grades < 50:
+        st.warning(
             "⚠️ Previous grades indicate academic risk."
         )
 
-if (
+    if (
         attendance_rate >= 70 and
         study_hours_per_week >= 10 and
         previous_grades >= 60
-):
-    st.success(
+    ):
+        st.success(
             "✅ Student shows strong academic potential."
-    )
+        )
 
     # ======================================
     # PDF REPORT DOWNLOAD
     # ======================================
 
-pdf_file = generate_pdf(
+    pdf_file = generate_pdf(
         prediction_result,
         recommendation,
         weak_subjects
-)
+    )
 
-with open(pdf_file, "rb") as file:
+    with open(pdf_file, "rb") as file:
 
-    st.download_button(
+        st.download_button(
             label="📥 Download Student Report",
             data=file,
             file_name="student_report.pdf",
             mime="application/pdf"
-    )
+        )
 
 # ==========================================
 # FOOTER
