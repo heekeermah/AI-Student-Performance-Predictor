@@ -293,15 +293,15 @@ if st.button("🔍 Predict Performance"):
     else:
         st.success("✅ No weak subjects identified.")
 
-    # ======================================
+# ======================================
     # AI RECOMMENDATION ENGINE
     # ======================================
 
     st.subheader("🤖 AI Recommendations")
 
+    # This variable is now safely inside the button click block
     prompt = f"""
     You are an intelligent academic mentor.
-
     Analyze this student's performance data and provide:
     - personalized academic advice
     - study improvement tips
@@ -309,41 +309,27 @@ if st.button("🔍 Predict Performance"):
     - weak subject intervention strategies
 
     Student Details:
-
     Study Hours Per Week: {study_hours_per_week}
     Attendance Rate: {attendance_rate}
     Previous Grades: {previous_grades}
-
     Mathematics Score: {math_score}
     English Score: {english_score}
     Science Score: {science_score}
 
-    Prediction Result:
-    {prediction_result}
-
-    Weak Subjects:
-    {weak_subjects}
+    Prediction Result: {prediction_result}
+    Weak Subjects: {weak_subjects}
 
     Keep the response concise and practical.
     """
-if ai_available:
 
-    response = model_ai.generate_content(prompt)
-
-    recommendation = response.text
-
-else:
-
-    recommendation = """
-    Study consistently.
-    Improve attendance.
-    Focus more on weak subjects.
-    Practice past questions regularly.
-    """
+    # --- AI Logic moved INSIDE the button block ---
     if ai_available:
-        response = model_ai.generate_content(prompt)
-        recommendation = response.text
-
+        try:
+            response = model_ai.generate_content(prompt)
+            recommendation = response.text
+        except Exception as e:
+            st.error(f"AI Error: {e}")
+            recommendation = "Focus on consistent study habits and attendance."
     else:
         recommendation = """
         Study consistently.
@@ -352,27 +338,23 @@ else:
         Practice past questions regularly.
         """
     
+    st.write(recommendation)
 
     # ======================================
     # TRANSLATION
     # ======================================
 
-    translation_prompt = f"""
-    Translate the following text to {language}.
-
-    Text:
-    {recommendation}
-    """
-
     if ai_available:
-        translation_response = model_ai.generate_content(
-            translation_prompt
-        )
+        translation_prompt = f"Translate the following text to {language}: {recommendation}"
+        translation_response = model_ai.generate_content(translation_prompt)
         translated_text = translation_response.text
-
     else:
         translated_text = recommendation
-        st.write(translated_text)
+    
+    st.info(f"**Translated Recommendation ({language}):**")
+    st.write(translated_text)
+
+    # ... [Rest of your code for Audio, Dashboard, and PDF] ...
 
     # ======================================
     # TEXT TO SPEECH
