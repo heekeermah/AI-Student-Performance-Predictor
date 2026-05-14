@@ -27,7 +27,7 @@ try:
     if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
         # Using the most stable model string
-        model_ai = genai.GenerativeModel("models/gemini-1.5-flash")
+        model_ai = genai.GenerativeModel("gemini-1.5-flash-latest")
         ai_available = True
     else:
         st.error("API Key missing in secrets!")
@@ -251,10 +251,6 @@ if st.button("🔍 Predict Performance"):
 
     prediction = model.predict(input_data)[0]
 
-    # ======================================
-    # PREDICTION OUTPUT
-    # ======================================
-
     if prediction == 1:
         st.success("✅ Student has high probability of PASSING")
         prediction_result = "PASS"
@@ -262,102 +258,54 @@ if st.button("🔍 Predict Performance"):
         st.error("❌ Student has high probability of FAILING")
         prediction_result = "FAIL"
 
-    # ======================================
-    # WEAK SUBJECT ANALYSIS
-    # ======================================
-
-    st.subheader("📚 Weak Subject Analysis")
-
+    # --- WEAK SUBJECT ANALYSIS ---
     weak_subjects = []
+    if math_score < 50: weak_subjects.append("Mathematics")
+    if english_score < 50: weak_subjects.append("English")
+    if science_score < 50: weak_subjects.append("Science")
 
-    if math_score < 50:
-        weak_subjects.append("Mathematics")
-
-    if english_score < 50:
-        weak_subjects.append("English")
-
-    if science_score < 50:
-        weak_subjects.append("Science")
-
-    if weak_subjects:
-        st.warning(
-            f"Weak Subjects Identified: {', '.join(weak_subjects)}"
-        )
-    else:
-        st.success("✅ No weak subjects identified.")
-
-    # ======================================
-    # AI RECOMMENDATION ENGINE (INSIDE THE BUTTON BLOCK)
-    # ======================================
+    # --- AI RECOMMENDATION ENGINE ---
     st.subheader("🤖 AI Recommendations")
-
-    # 1. Initialize empty variables so they exist for the PDF/Dashboard later
-    recommendation = "Focus on consistent study and attendance."
+    
+    recommendation = "Study consistently and focus on weak subjects."
     translated_text = recommendation
 
     if ai_available:
         try:
-            # Create the prompt here (inside the button click)
-            prompt = f"Student info: Study {study_hours_per_week}h, Grades {previous_grades}%. Give 3 tips."
+            # PROMPT DEFINITION (Indented inside the button!)
+            prompt = f"Student Performance: {prediction_result}. Weakness: {weak_subjects}. Suggest 3 study tips."
             
-            # Generate the content
+            # Generate primary recommendation
             response = model_ai.generate_content(prompt)
             recommendation = response.text
             
-            # Generate translation immediately after
-            t_prompt = f"Translate to {language}: {recommendation}"
-            t_response = model_ai.generate_content(t_prompt)
+            # Generate translation immediately
+            translation_prompt = f"Translate the following text to {language}: {recommendation}"
+            t_response = model_ai.generate_content(translation_prompt)
             translated_text = t_response.text
             
             st.write(recommendation)
-            st.info(f"**{language} Version:**")
+            st.info(f"**{language} Translation:**")
             st.write(translated_text)
 
         except Exception as e:
-            st.warning("AI is currently unavailable. Using standard advice.")
-            # This line below prints the error for you to see, but doesn't crash the app
-            st.error(f"Technical Detail: {e}")
+            st.warning("AI is currently taking a break. Here is some general advice:")
             st.write(recommendation)
+            # This handles the 404 silently so the user can still see charts
+            print(f"DEBUG ERROR: {e}") 
     else:
         st.write(recommendation)
 
     # ======================================
-    # TRANSLATION
-    # ======================================
-
-    if ai_available:
-        translation_prompt = f"Translate the following text to {language}: {recommendation}"
-        translation_response = model_ai.generate_content(translation_prompt)
-        translated_text = translation_response.text
-    else:
-        translated_text = recommendation
-    
-    st.info(f"**Translated Recommendation ({language}):**")
-    st.write(translated_text)
-
-    # ... [Rest of your code for Audio, Dashboard, and PDF] ...
-
-    # ======================================
     # TEXT TO SPEECH
     # ======================================
-
     try:
-
-        tts = gTTS(
-            text=translated_text,
-            lang=selected_lang
-        )
-
+        tts = gTTS(text=translated_text, lang=selected_lang)
         audio_file = "recommendation.mp3"
-
         tts.save(audio_file)
-
-        audio_bytes = open(audio_file, "rb").read()
-
-        st.audio(audio_bytes, format="audio/mp3")
-
-    except:
-        st.warning("Audio generation unavailable.")
+        st.audio(audio_file, format="audio/mp3")
+    except Exception as e:
+        st.warning("Audio unavailable.")
 
     # ======================================
     # PERFORMANCE DASHBOARD
